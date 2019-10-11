@@ -36,14 +36,8 @@ def simple_flat(x):
     """
     TODO: Implement a function that flattens the given tensor and returns the result.
     """
-    flatten_size = 0;
-    for which_layer, size in enumerate(x.shape):
-        if which_layer == 0:
-            flatten_size = size;
-        else:
-            flatten_size *= size
     
-    return flatten_size
+    return x.view(-1)
 
 # Transpose and Permutation
 
@@ -85,7 +79,7 @@ def broadcastable_matrix_mul(x, y):
     TODO: Implement a function that computes the matrix product of two tensors and returns the result.
         The function needs to be broadcastable.
     """
-    return None
+    return torch.matmul(x,y)
 
 
 # Concatenate and stack.
