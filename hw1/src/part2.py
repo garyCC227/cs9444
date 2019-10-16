@@ -41,6 +41,8 @@ class LinearModel:
         a float, but raises a Value error if a boolean, list or numpy array is passed in
         hint: consider np.exp()
         """
+        a = 1/(1 + np.exp(-x))
+        return a
 
     def forward(self, inputs):
         """
@@ -49,6 +51,8 @@ class LinearModel:
         inputs is a numpy array. The bias term is the last element in self.weights.
         hint: call the activation function you have implemented above.
         """
+        Z = self.activation((np.dot(self.weights[:2].T,inputs) + self.weights[-1]))
+        return Z
 
     @staticmethod
     def loss(prediction, label):
@@ -56,6 +60,11 @@ class LinearModel:
         TODO: Return the cross entropy for the given prediction and label
         hint: consider using np.log()
         """
+#         m = label.shape[0]
+#         print(prediction, label)
+#         print("--------")
+        Loss = -label*np.log(prediction) + (1-label) *np.log(1-prediction)
+        return Loss
 
     @staticmethod
     def error(prediction, label):
@@ -65,6 +74,7 @@ class LinearModel:
         For example, if label= 1 and the prediction was 0.8, return 0.2
                      if label= 0 and the preduction was 0.43 return -0.43
         """
+        return label - prediction
 
     def backward(self, inputs, diff):
         """
@@ -81,7 +91,13 @@ class LinearModel:
 
         Note: Numpy arrays are passed by reference and can be modified in-place
         """
+        dW = inputs * diff
+        db = diff
 
+        self.weights[-1] += self.lr * db; # update bias
+        self.weights[:2] += self.lr * dW; # update weights
+        
+        
     def plot(self, inputs, marker):
         """
         Plot the data and the decision boundary
@@ -113,26 +129,27 @@ def main():
         num_correct = 0
         for x, y in zip(inputs, labels):
             # Get prediction
-            output = model.forward(x)
 
+            output = model.forward(x)
+            
             # Calculate loss
             cost = model.loss(output, y)
 
-            # Calculate difference or differential
+#             # Calculate difference or differential
             diff = model.error(output, y)
 
-            # Update the weights
+#             # Update the weights
             model.backward(x, diff)
 
-            # Record accuracy
+#             # Record accuracy
             preds = output > 0.5  # 0.5 is midline of sigmoid
             num_correct += int(preds == y)
+            
 
         print(f" Cost: {cost:8.6f} Accuracy: {num_correct / len(inputs) * 100}%")
         model.plot(inputs, "C2--")
     model.plot(inputs, "k")
     plt.show()
-
 
 if __name__ == "__main__":
     main()
