@@ -63,7 +63,7 @@ def simple_dot_product(x, y):
     TODO: Implement a function that computes the dot product of
         two rank 1 tensors and returns the result.
     """
-    return x * y
+    return torch.dot(x,y)
 
 
 def simple_matrix_mul(x, y):
@@ -97,6 +97,6 @@ def simple_stack(tensors, dim):
     TODO: Implement a function that concatenates the given sequence of tensors
         along a new dimension(dim) and returns the result.
     """
-    return torch.cat(tensors,dim)
+    return torch.stack(tensors,dim)
 
 
