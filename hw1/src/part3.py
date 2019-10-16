@@ -43,6 +43,21 @@ class FeedForward(nn.Module):
     TODO: Implement the following network structure
     Linear (256) -> ReLU -> Linear(64) -> ReLU -> Linear(10) -> ReLU-> LogSoftmax
     """
+    def __init__(self):
+        super().__init__()
+        self.fc1 = nn.Linear(784, 256)
+        self.fc2 = nn.Linear(256, 64)
+        self.fc3 = nn.Linear(64, 10)
+    
+    def forward(self, x):
+        x = x.view(x.shape[0], -1)
+        
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = F.relu(self.fc3(x))
+        x = F.log_softmax(x, dim=1)
+#         print(x.shape)
+        return x
 
 
 class CNN(nn.Module):
@@ -57,7 +72,28 @@ class CNN(nn.Module):
     Hint: You will need to reshape outputs from the last conv layer prior to feeding them into
     the linear layers.
     """
-
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(1, 10, 5, stride=1)
+        self.pool = nn.MaxPool2d(kernel_size=(2,2))
+        self.conv2 = nn.Conv2d(10, 50, 5, stride=1)
+        
+        #linear layer
+        self.fc1 = nn.Linear(50 * 4 * 4, 256)
+        self.fc2 = nn.Linear(256, 10)
+    
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        x = self.pool(x)
+        x = self.pool(F.relu(self.conv2(x)))
+        
+        x = x.view(x.shape[0], -1)
+        x = F.relu(self.fc1(x))
+        x = self.fc2(x)
+        x = F.log_softmax(x, dim=1)
+        
+        return x
+        
 class NNModel:
     def __init__(self, network, learning_rate):
         """
@@ -86,7 +122,7 @@ class NNModel:
         
         Hint: All networks output log-softmax values (i.e. log probabilities or.. likelihoods.). 
         """
-        self.lossfn = None
+        self.lossfn = torch.nn.NLLLoss()
         self.optimizer = optim.Adam(self.model.parameters(), lr=learning_rate)
 
         self.num_train_samples = len(self.trainloader)
@@ -104,6 +140,17 @@ class NNModel:
 
            2) An int 8x8 numpy array of labels corresponding to this tiling
         """
+        from torchvision import utils
+        for i_batch, sample_batched in enumerate(self.trainloader):
+            images_batch, landmarks_batch = \
+                    sample_batched[0], sample_batched[1]
+
+            grid = utils.make_grid(images_batch)
+            grid = grid.numpy().transpose((1,2,0)).astype(np.float32)
+            
+            assert grid.dtype == np.float32
+            
+            return grid, landmarks_batch.numpy().reshape((8,8))
 
     def train_step(self):
         """
@@ -165,6 +212,7 @@ def plot_result(results, names):
 
 def main():
     models = [Linear(), FeedForward(), CNN()]  # Change during development
+#     models = [CNN()]  # Change during development
     epochs = 10
     results = []
 
@@ -187,6 +235,7 @@ def main():
         results.append(accuracies)
 
     plot_result(results, [m.__class__.__name__ for m in models])
+
 
 
 if __name__ == "__main__":
