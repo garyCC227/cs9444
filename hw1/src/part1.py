@@ -19,7 +19,7 @@ def simple_addition(x, y):
     """
     TODO: Implement a simple addition function that accepts two tensors and returns the result.
     """
-    return x + y
+    return torch.add(x,y)
 
 
 # Resize tensors
