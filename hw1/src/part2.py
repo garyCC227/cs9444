@@ -42,6 +42,8 @@ class LinearModel:
         hint: consider np.exp()
         """
         a = 1/(1 + np.exp(-x))
+        a = a.astype(np.float64)
+        assert a.dtype == np.float64
         return a
 
     def forward(self, inputs):

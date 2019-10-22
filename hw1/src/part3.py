@@ -140,17 +140,23 @@ class NNModel:
 
            2) An int 8x8 numpy array of labels corresponding to this tiling
         """
-        from torchvision import utils
         for i_batch, sample_batched in enumerate(self.trainloader):
             images_batch, landmarks_batch = \
                     sample_batched[0], sample_batched[1]
+            
+            images = images_batch.numpy().astype(np.float32)
+            n_cols = 8
+            n_indexs, intensity, height, width = images.shape
+            n_rows = int(n_indexs/n_cols)
+            assert n_indexs == n_rows * n_cols
 
-            grid = utils.make_grid(images_batch)
-            grid = grid.numpy().transpose((1,2,0)).astype(np.float32)
-            
-            assert grid.dtype == np.float32
-            
-            return grid, landmarks_batch.numpy().reshape((8,8))
+            # want (height*nrows, width*ncols)
+            result = (images.reshape(n_rows, n_cols, height, width)
+                     .swapaxes(1,2)
+                    .reshape(height*n_rows, width*n_cols))
+
+            assert result.dtype == np.float32
+            return result, landmarks_batch.numpy().reshape((8,8))
 
     def train_step(self):
         """
@@ -213,14 +219,14 @@ def plot_result(results, names):
 def main():
     models = [Linear(), FeedForward(), CNN()]  # Change during development
     # models = [Linear(),FeedForward()]  # Change during development
-    epochs = 30
+    epochs = 10
     results = []
 
     # Can comment the below out during development
-    # images, labels = NNModel(Linear(), 0.003).view_batch()
-    # print(labels)
-    # plt.imshow(images, cmap="Greys")
-    # plt.show()
+    images, labels = NNModel(Linear(), 0.003).view_batch()
+    print(labels)
+    plt.imshow(images, cmap="Greys")
+    plt.show()
 
     for model in models:
         print(f"Training {model.__class__.__name__}...")
